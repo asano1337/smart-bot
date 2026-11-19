@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#F6F8FA">
+<title>Smart Bot CRM — бот-продавец и CRM · Telegram Mini App</title>
+<style>
+:root{
+  --bg:#F6F8FA;--card:#fff;--ink:#0F172A;--ink2:#334155;--mu:#64748B;--mu2:#94A3B8;--line:#E4E8EE;--line2:#D5DBE4;
+  --blue:#2563EB;--blue2:#1D4ED8;--bl-s:#EAF1FF;--em:#059669;--em2:#047857;--em-s:#E6F6EE;--amb:#D97706;--amb-s:#FEF3E2;--vio:#7C3AED;--vio-s:#F1EBFE;
+  --sans:Inter,"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,.9,.3,1);--spring:cubic-bezier(.34,1.45,.64,1);
+  --sh1:0 1px 2px rgba(15,23,42,.05),0 1px 1px rgba(15,23,42,.03);
+  --sh2:0 1px 2px rgba(15,23,42,.05),0 4px 8px -2px rgba(15,23,42,.06),0 12px 24px -8px rgba(15,23,42,.08);
+  --sh3:0 2px 4px rgba(15,23,42,.05),0 12px 24px -6px rgba(15,23,42,.1),0 32px 56px -16px rgba(15,23,42,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden;
+  background-image:radial-gradient(900px 480px at 85% -10%,rgba(37,99,235,.07),transparent 60%),radial-gradient(700px 420px at -5% 110%,rgba(5,150,105,.07),transparent 60%)}
+button,input{font:inherit;color:inherit;background:none;border:0;outline:0}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--blue);border-radius:10px}
+::-webkit-scrollbar{width:0;height:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+
+.cap{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:999;display:flex;align-items:center;white-space:nowrap;height:42px;padding:0 5px 0 14px;gap:4px;border-radius:99px;background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid var(--line);box-shadow:0 1px 0 #fff inset,0 10px 28px rgba(15,23,42,.14),0 2px 6px rgba(15,23,42,.08);max-width:calc(100vw - 16px)}
+.cap b{font:600 10px var(--mono);letter-spacing:.14em;color:var(--mu);display:flex;align-items:center;gap:7px;margin-right:6px}
+.cap b i{width:5px;height:5px;border-radius:50%;background:var(--em);animation:blink 2s infinite}
+@keyframes blink{50%{opacity:.3}}
+.cap a{height:32px;padding:0 13px;display:flex;align-items:center;border-radius:99px;color:var(--ink);text-decoration:none;font-weight:500;font-size:12.5px;transition:transform .25s var(--spring),background .2s}
+.cap a:hover{background:#EEF2F7}.cap a:active{transform:scale(.94)}
+.cap a.o{background:var(--blue);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 4px 10px -2px rgba(37,99,235,.5)}
+@media(max-width:420px){.cap{padding-left:10px}.cap b{display:none}.cap a{padding:0 10px;font-size:12px}}
+
+.app{height:100dvh;display:flex;flex-direction:column;padding:14px 18px calc(66px + env(safe-area-inset-bottom));gap:12px;max-width:1380px;margin:0 auto}
+.top{display:flex;align-items:center;gap:12px;flex:none}
+.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#3B82F6,#1D4ED8);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 6px 14px -4px rgba(37,99,235,.55)}
+.top h1{font-size:16px;font-weight:650;letter-spacing:-.01em;line-height:1.1}
+.top h1 small{display:block;font-size:11.5px;font-weight:450;color:var(--mu);margin-top:2px;letter-spacing:0}
+.sp{flex:1}
+.pill{display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:99px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh1);font-size:12px;font-weight:500;color:var(--ink2)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--em);box-shadow:0 0 0 0 rgba(5,150,105,.5);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(5,150,105,0)}100%{box-shadow:0 0 0 0 rgba(5,150,105,0)}}
+.btn{height:36px;padding:0 14px;border-radius:10px;background:var(--card);border:1px solid var(--line2);box-shadow:var(--sh1);font-weight:550;font-size:13px;transition:transform .25s var(--spring),box-shadow .2s,background .2s;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{background:#F8FAFC}.btn:active{transform:scale(.95)}
+.btn.pri{background:linear-gradient(180deg,#3B82F6,#2563EB);border-color:#1D4ED8;color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 6px 14px -4px rgba(37,99,235,.5)}
+.btn.pri:hover{filter:brightness(1.06)}
+.tabs{display:none;flex:none;padding:3px;border-radius:12px;background:#E9EDF3}
+.tabs button{flex:1;height:38px;border-radius:9px;font-weight:550;font-size:13px;color:var(--mu);transition:all .3s var(--ease)}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--sh2)}
+
+.main{flex:1;min-height:0;display:grid;grid-template-columns:372px 1fr;gap:16px}
+.crm{min-height:0;min-width:0;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding:2px 2px 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh2)}
+
+/* чат */
+.tg{min-height:0;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:var(--sh3)}
+.tgh{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}
+.av{position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#34D399,#2563EB);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 4px 10px -3px rgba(37,99,235,.5)}
+.av::after{content:"";position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:50%;background:#22C55E;border:2px solid #fff}
+.tgh b{display:flex;align-items:center;gap:5px;font-size:14.5px;font-weight:650;line-height:1.1}
+.tgh small{display:block;font-size:12px;color:var(--mu);margin-top:2px;transition:color .3s}
+.tgh small.typ{color:var(--blue)}
+.chat{flex:1;min-height:0;overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(180deg,#E8F0F8,#E3ECF5);background-image:radial-gradient(circle at 20% 10%,rgba(255,255,255,.7),transparent 40%),radial-gradient(circle at 80% 80%,rgba(37,99,235,.06),transparent 45%)}
+.m{max-width:86%;padding:8px 12px 7px;border-radius:16px;font-size:14px;line-height:1.38;animation:min .45s var(--spring) both;box-shadow:0 1px 1px rgba(15,23,42,.08);white-space:pre-line}
+@keyframes min{from{opacity:0;transform:translateY(10px) scale(.94)}}
+.m.bot{align-self:flex-start;background:#fff;border-bottom-left-radius:5px;transform-origin:0 100%}
+.m.me{align-self:flex-end;background:#DDF6E4;border-bottom-right-radius:5px;transform-origin:100% 100%}
+.m time{display:block;text-align:right;font-size:10.5px;color:var(--mu2);margin-top:2px}
+.m.me time{color:#5C9C73}
+.m b{font-weight:650}
+.m.sys{align-self:center;max-width:92%;background:rgba(15,23,42,.38);color:#fff;font-size:11.5px;padding:4px 11px;border-radius:99px;box-shadow:none;text-align:center}
+.m.card2{padding:0;overflow:hidden;width:86%}
+.m.card2 .hd{padding:10px 12px;background:linear-gradient(135deg,#EAF1FF,#E6F6EE);border-bottom:1px solid var(--line)}
+.m.card2 .hd b{display:block;font-size:13px}.m.card2 .hd span{font-size:11.5px;color:var(--mu)}
+.m.card2 .bd{padding:8px 12px;font-size:13px}
+.m.card2 .r{display:flex;justify-content:space-between;padding:3px 0;color:var(--ink2)}
+.m.card2 .r.t{border-top:1px dashed var(--line2);margin-top:4px;padding-top:7px;font-weight:650;color:var(--ink)}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:11px 14px;border-radius:16px;border-bottom-left-radius:5px;background:#fff;box-shadow:0 1px 1px rgba(15,23,42,.08);animation:min .3s var(--spring)}
+.typing i{width:6px;height:6px;border-radius:50%;background:#94A3B8;animation:dotb 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dotb{30%{transform:translateY(-4px);background:#2563EB}}
+.kb{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 10px 10px;background:#E3ECF5;min-height:10px}
+.kb:empty{display:none}
+.kb.one{grid-template-columns:1fr}
+.kb button{min-height:44px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 1px 1px rgba(15,23,42,.1);font-weight:550;font-size:13.5px;color:#1D4ED8;text-align:center;transition:transform .25s var(--spring),background .2s;animation:min .4s var(--spring) both}
+.kb button:active{transform:scale(.95);background:#fff}
+.kb button.pri{background:linear-gradient(180deg,#3B82F6,#2563EB);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 6px 12px -4px rgba(37,99,235,.55)}
+.kb button.ok{background:linear-gradient(180deg,#10B981,#059669);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 6px 12px -4px rgba(5,150,105,.55)}
+.kb .inl{display:flex;gap:6px;grid-column:1/-1}
+.kb .inl input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:12px;background:#fff;font-size:16px;box-shadow:0 1px 1px rgba(15,23,42,.1)}
+.kb .inl button{flex:none;padding:0 16px}
+.compose{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px calc(8px);background:#fff;border-top:1px solid var(--line);color:var(--mu2);font-size:13.5px}
+.compose span{flex:1;height:34px;display:flex;align-items:center;padding:0 12px;border-radius:17px;background:#F1F4F8}
+
+/* CRM */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{padding:14px 16px}
+.kpi small{display:block;font-size:11.5px;color:var(--mu);font-weight:500}
+.kpi b{display:block;font:650 24px/1.15 var(--sans);letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+.kpi em{font-style:normal;font-size:11px;font-weight:600;color:var(--em);background:var(--em-s);padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:3px}
+.kpi.flash b{animation:flash .9s var(--ease)}
+@keyframes flash{30%{color:var(--em);transform:translateY(-2px)}}
+.sect{display:flex;align-items:center;justify-content:space-between;padding:0 2px;margin-bottom:2px}
+.sect h2{font-size:13px;font-weight:650;letter-spacing:-.005em}
+.sect span{font-size:11.5px;color:var(--mu)}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.col{display:flex;flex-direction:column;min-height:196px;padding:8px;border-radius:14px;background:#EDF1F6;border:1px solid var(--line);transition:background .3s,border-color .3s}
+.col.hot{background:#E4EEFF;border-color:#BFD3FB}
+.col h3{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 8px;font-size:12px;font-weight:650;color:var(--ink2)}
+.col h3 i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.col h3>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.col h3 [data-c]{flex:none;font:600 11px var(--mono);color:var(--mu);background:#fff;border:1px solid var(--line);padding:0 7px;border-radius:99px;min-width:22px;text-align:center}
+.lead .nm{padding-right:30px}.lead .nm,.lead .ct{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lead .tg2{gap:6px;flex-wrap:wrap}.lead .sum,.tag{white-space:nowrap}
+.cl{display:flex;flex-direction:column;gap:8px;flex:1}
+.lead{position:relative;padding:11px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:var(--sh2);animation:lin .6s var(--spring) both;transition:transform .3s var(--spring),box-shadow .3s}
+.lead:hover{transform:translateY(-2px);box-shadow:var(--sh3)}
+@keyframes lin{from{opacity:0;transform:translateY(-14px) scale(.92)}}
+.lead.fly{animation:fly .7s var(--spring) both}
+@keyframes fly{from{opacity:.2;transform:translateX(-26px) scale(.94);box-shadow:0 0 0 3px rgba(37,99,235,.35)}}
+.lead .nm{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.lead .ini{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(145deg,#60A5FA,#2563EB);flex:none}
+.lead .ct{font:400 11.5px var(--mono);color:var(--mu);margin-top:6px}
+.lead .tg2{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--bl-s);color:var(--blue2)}
+.lead .sum{font:650 13px var(--mono);color:var(--ink)}
+.lead .nx{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--mu);background:#F1F4F8;transition:all .25s var(--spring)}
+.lead .nx:hover{background:var(--blue);color:#fff}.lead .nx:active{transform:scale(.85)}
+.lead.paid{border-color:#A7E3C6;background:linear-gradient(180deg,#fff,#F3FBF7)}
+.empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--mu2);font-size:12px;border:1.5px dashed var(--line2);border-radius:12px;min-height:90px;padding:8px}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:12px}
+.chart{padding:16px}
+.chart h2,.roi h2{font-size:13px;font-weight:650}
+.chart .big{font:650 26px/1.1 var(--sans);letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.chart .sub{font-size:11.5px;color:var(--mu)}
+.chart svg{display:block;width:100%;height:150px;margin-top:8px;overflow:visible}
+.roi{padding:16px;display:flex;flex-direction:column;gap:12px}
+.rr label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:6px;font-weight:500}
+.rr label b{font:600 12px var(--mono);color:var(--ink)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--blue) var(--p,50%),#E2E8F0 var(--p,50%))}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:#E2E8F0}
+input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--blue)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#fff;border:1px solid var(--line2);box-shadow:0 1px 2px rgba(15,23,42,.2),0 4px 8px rgba(15,23,42,.14);transition:transform .2s var(--spring)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid var(--line2);box-shadow:0 2px 6px rgba(15,23,42,.2)}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.res div{padding:10px 12px;border-radius:12px;background:var(--em-s);border:1px solid #BFE8D3}
+.res div:nth-child(2){background:var(--bl-s);border-color:#C6D8FB}
+.res small{display:block;font-size:11px;color:var(--mu);font-weight:500}
+.res b{font:650 17px var(--mono);letter-spacing:-.02em}
+.res div:first-child b{color:var(--em2)}.res div:nth-child(2) b{color:var(--blue2)}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-160%);z-index:998;padding:10px 16px;border-radius:12px;background:var(--ink);color:#fff;font-size:13px;font-weight:550;box-shadow:var(--sh3);transition:transform .5s var(--spring);max-width:calc(100vw - 24px)}
+.toast.on{transform:translate(-50%,0)}
+.cfx{position:fixed;inset:0;pointer-events:none;z-index:997}
+
+@media(max-width:1060px){
+  .main{grid-template-columns:340px 1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .board{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .app{padding:10px 12px calc(66px + env(safe-area-inset-bottom))}
+  .tabs{display:flex}
+  .pill,.btn.hide{display:none}
+  .main{display:block;position:relative}
+  .tg,.crm{height:100%}
+  .main[data-v="chat"] .crm{display:none}
+  .main[data-v="crm"] .tg{display:none}
+  .tg{border-radius:20px}
+  .board{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.6" r="1.1" fill="#fff"/><circle cx="9" cy="13" r="1.1" fill="#fff"/><circle cx="15" cy="13" r="1.1" fill="#fff"/></svg></div>
+    <h1>Smart Bot CRM<small>Бот-продавец + воронка продаж</small></h1>
+    <div class="sp"></div>
+    <div class="pill"><i></i>Бот онлайн</div>
+    <button class="btn hide" id="newBtn" type="button">Новый диалог</button>
+    <button class="btn pri" id="flowBtn" type="button">Поток лидов</button>
+  </header>
+  <div class="tabs" id="tabs"><button type="button" class="on" data-v="chat">Бот в Telegram</button><button type="button" data-v="crm">CRM · <span id="tabN">0</span></button></div>
+  <div class="main" id="main" data-v="chat">
+    <section class="tg" aria-label="Telegram-чат">
+      <div class="tgh">
+        <button type="button" id="backBtn" aria-label="Назад" style="width:30px;height:36px;display:grid;place-items:center"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 8l6.5 6.5"/></svg></button>
+        <div class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3.5"/><path d="M12 8V4.5"/><circle cx="9" cy="13" r="1.1" fill="#fff"/><circle cx="15" cy="13" r="1.1" fill="#fff"/></svg></div>
+        <div><b>Aurora Sales Bot<svg width="15" height="15" viewBox="0 0 24 24"><path d="M12 1.8l2.6 1.7 3.1-.2 1.2 2.9 2.6 1.7-.7 3 .7 3-2.6 1.7-1.2 2.9-3.1-.2L12 21.2l-2.6-1.7-3.1.2-1.2-2.9L2.5 15l.7-3-.7-3 2.6-1.7 1.2-2.9 3.1.2z" fill="#2AABEE"/><path d="M8 12.2l2.7 2.7L16.3 9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></b><small id="status">бот</small></div>
+      </div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="kb" id="kb"></div>
+      <div class="compose"><span>Сообщение</span></div>
+    </section>
+    <section class="crm" id="crm">
+      <div class="kpis" id="kpis"></div>
+      <div><div class="sect"><h2>Воронка продаж</h2><span>лиды двигаются автоматически · или кнопкой →</span></div></div>
+      <div class="board" id="board"></div>
+      <div class="two">
+        <div class="card chart"><h2>Выручка с бота</h2><div class="big mono" id="revBig">0 ₽</div><div class="sub" id="revSub">Оплаченные заказы за 7 дней</div><svg id="chartSvg" viewBox="0 0 400 150" preserveAspectRatio="none"></svg></div>
+        <div class="card roi"><h2>Окупаемость бота</h2>
+          <div class="rr"><label>Обращений в месяц<b id="vL">400</b></label><input id="rL" type="range" min="50" max="2000" step="10" value="400"></div>
+          <div class="rr"><label>Средний чек<b id="vC">6 500 ₽</b></label><input id="rC" type="range" min="1000" max="50000" step="500" value="6500"></div>
+          <div class="rr"><label>Конверсия сейчас<b id="vK">8%</b></label><input id="rK" type="range" min="1" max="30" step="1" value="8"></div>
+          <div class="rr"><label>Рост конверсии с ботом<b id="vU">+45%</b></label><input id="rU" type="range" min="5" max="120" step="5" value="45"></div>
+          <div class="res"><div><small>Доп. прибыль / мес</small><b id="oP">0</b></div><div><small>Окупится за</small><b id="oT">0</b></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<canvas class="cfx" id="cfx"></canvas>
+<div class="cap" role="complementary" aria-label="Демо-стенд"><b><i></i>ДЕМО-СТЕНД</b><a href="https://asano1337.github.io/fortgshophub/">← В хаб</a><a class="o" href="https://t.me/asano2k" target="_blank" rel="noopener">Заказать похожий</a></div>
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+function vib(p){try{if(navigator.vibrate)navigator.vibrate(p)}catch(e){}}
+function safe(f){try{return f()}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function pad(n){return n<10?'0'+n:''+n}
+function num(n){return Math.round(n).toLocaleString('ru-RU').replace(/\u00a0/g,' ')}
+function fmt(n){return num(n)+' ₽'}
+function hm(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
+
+/* ---------- Telegram WebApp ---------- */
+var real=(window.Telegram&&window.Telegram.WebApp)?window.Telegram.WebApp:null;
+var H={
+  impact:function(s){safe(function(){real.HapticFeedback.impactOccurred(s)});vib(s==='heavy'?26:s==='medium'?14:7)},
+  select:function(){safe(function(){real.HapticFeedback.selectionChanged()});vib(4)},
+  notify:function(t){safe(function(){real.HapticFeedback.notificationOccurred(t)});vib(t==='success'?[10,40,14]:t==='error'?[30,40,30,40,60]:[20,50,20])}
+};
+safe(function(){real.ready();real.expand();real.disableVerticalSwipes();real.setHeaderColor('#F6F8FA');real.setBackgroundColor('#F6F8FA')});
+safe(function(){real.BackButton.show();real.BackButton.onClick(back)});
+
+/* ---------- данные ---------- */
+var NICHES=[['Салон красоты',59000],['Онлайн-школа',89000],['Доставка еды',79000],['Автосервис',69000]];
+var BUDGETS=[['до 50 000 ₽',.8],['50–150 тыс. ₽',1],['150 000 ₽ и больше',1.35]];
+var STAGES=['Новый лид','Квалифицирован','КП отправлено','Оплачено'];
+var SCOL=['#2563EB','#7C3AED','#D97706','#059669'];
+var NAMES=[['Анна К.','@anna_k'],['Игорь М.','@igor_m'],['Мария С.','@maria_s'],['Дмитрий П.','@dim_p'],['Елена В.','@elena_v'],['Артём Л.','@artem_l'],['Ольга Н.','@olga_n'],['Максим Т.','@max_t'],['Софья Р.','@sofya_r'],['Павел Б.','@pavel_b']];
+var D={leads:[],paid:0,rev:0,seq:0,uid:0,lead:null,step:'idle',busy:false,timers:[],flow:null,shown:0};
+var DAYS=[42000,58000,51000,73000,66000,89000];
+
+var chat=$('#chat'),kb=$('#kb'),status=$('#status');
+function later(fn,ms){var t=setTimeout(fn,ms);D.timers.push(t);return t}
+function clearTimers(){D.timers.forEach(clearTimeout);D.timers=[]}
+function scrollEnd(){chat.scrollTo?chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}):chat.scrollTop=chat.scrollHeight}
+
+/* ---------- чат ---------- */
+function addMsg(cls,html,time){
+  var d=document.createElement('div');d.className='m '+cls;
+  d.innerHTML=html+(time===false?'':'<time>'+hm()+'</time>');chat.appendChild(d);scrollEnd();return d;
+}
+function botSay(text,cb,delay){
+  status.textContent='печатает…';status.classList.add('typ');
+  var t=document.createElement('div');t.className='typing';t.innerHTML='<i></i><i></i><i></i>';chat.appendChild(t);scrollEnd();
+  later(function(){
+    if(t.parentNode)t.parentNode.removeChild(t);
+    addMsg('bot',text);status.textContent='бот';status.classList.remove('typ');H.select();
+    if(cb)cb();
+  },delay||Math.min(1400,500+text.length*14));
+}
+function meSay(t){addMsg('me',esc(t));H.impact('light')}
+function sysSay(t){addMsg('sys',esc(t),false)}
+function keys(list){
+  kb.innerHTML='';kb.className='kb'+(list.length===1?' one':'');
+  list.forEach(function(k,i){
+    var b=document.createElement('button');b.type='button';b.className=k.c||'';b.textContent=k.t;b.style.animationDelay=(i*60)+'ms';
+    b.addEventListener('click',function(){if(D.busy)return;H.impact('light');k.fn()});kb.appendChild(b);
+  });
+  scrollEnd();
+}
+function clearKeys(){kb.innerHTML='';kb.className='kb'}
+
+function start(){
+  clearTimers();D.busy=false;D.lead=null;D.step='idle';chat.innerHTML='';clearKeys();
+  sysSay('Сегодня');
+  addMsg('me','/start');
+  botSay('Здравствуйте! Я бот-ассистент студии <b>Aurora</b>. Подберу решение и рассчитаю стоимость за 1 минуту. Какая у вас сфера бизнеса?',function(){
+    D.step='niche';
+    keys(NICHES.map(function(n){return{t:n[0],fn:function(){pickNiche(n)}}}));
+  });
+}
+function pickNiche(n){
+  D.busy=true;clearKeys();meSay(n[0]);D.lead={niche:n,budget:null};
+  botSay('Отлично, <b>'+esc(n[0])+'</b>. Какой бюджет на автоматизацию рассматриваете?',function(){
+    D.busy=false;keys(BUDGETS.map(function(b){return{t:b[0],fn:function(){pickBudget(b)}}}));
+  });
+}
+function pickBudget(b){
+  D.busy=true;clearKeys();meSay(b[0]);D.lead.budget=b;
+  botSay('Принято. Для расчёта и отправки коммерческого предложения нужен ваш контакт. Нажмите кнопку, и всё готово.',function(){
+    D.busy=false;
+    keys([{t:'Отправить мой контакт',c:'pri',fn:function(){contact('Алексей Смирнов','+7 900 ***-**-42')}},{t:'Ввести вручную',fn:manual}]);
+  });
+}
+function manual(){
+  var w=document.createElement('div');w.className='inl';
+  var i=document.createElement('input');i.type='text';i.placeholder='Телефон или @username';i.autocomplete='off';
+  var b=document.createElement('button');b.type='button';b.className='pri';b.textContent='Отправить';
+  function go(){var v=i.value.trim();if(v.length<3){H.notify('error');i.focus();return}contact(v.indexOf('@')===0?'Клиент':'Клиент',v)}
+  b.addEventListener('click',go);i.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  w.appendChild(i);w.appendChild(b);kb.innerHTML='';kb.className='kb one';kb.appendChild(w);scrollEnd();
+  setTimeout(function(){safe(function(){i.focus()})},50);
+}
+function contact(name,ct){
+  if(D.busy)return;D.busy=true;clearKeys();meSay('Контакт: '+ct);
+  var n=D.lead.niche,bu=D.lead.budget,sum=Math.round(n[1]*bu[1]/500)*500;
+  var lead=addLead({name:name,contact:ct,niche:n[0],sum:sum});D.lead.ref=lead;
+  H.notify('success');toast('Новый лид в CRM: '+name);
+  botSay('Спасибо! Заявка принята, менеджер уже видит её в CRM. Готовлю предложение…',function(){
+    later(function(){
+      moveLead(lead,1);
+      sysSay('Лид квалифицирован автоматически');
+      botSay('Предложение для вас:',function(){
+        addMsg('bot card2','<div class="hd"><b>Бот-продавец для ниши «'+esc(n[0])+'»</b><span>Коммерческое предложение № '+(1040+lead.id)+'</span></div><div class="bd"><div class="r"><span>Разработка и запуск</span><span class="mono">'+num(sum*.72)+'</span></div><div class="r"><span>Интеграция с CRM</span><span class="mono">'+num(sum*.18)+'</span></div><div class="r"><span>Обучение команды</span><span class="mono">'+num(sum*.10)+'</span></div><div class="r t"><span>Итого</span><span class="mono">'+fmt(sum)+'</span></div></div>');
+        moveLead(lead,2);D.busy=false;D.step='pay';
+        keys([{t:'Оплатить '+fmt(sum),c:'ok',fn:function(){pay(lead)}},{t:'Вопрос менеджеру',fn:function(){ask()}}]);
+      },900);
+    },1500);
+  });
+}
+function ask(){
+  D.busy=true;clearKeys();meSay('Хочу уточнить детали');
+  botSay('Передал менеджеру. Он ответит в течение 5 минут. А пока можно сразу оплатить, и мы начнём работу сегодня.',function(){
+    D.busy=false;var l=D.lead.ref;keys([{t:'Оплатить '+fmt(l.sum),c:'ok',fn:function(){pay(l)}}]);
+  });
+}
+function pay(l){
+  D.busy=true;clearKeys();meSay('Оплатить '+fmt(l.sum));
+  sysSay('Открыт счёт: createInvoiceLink → openInvoice');
+  later(function(){
+    sysSay('invoiceClosed: paid');
+    moveLead(l,3);
+    botSay('Оплата получена. Заказ № '+(1040+l.id)+' принят в работу. Спасибо!',function(){
+      D.busy=false;keys([{t:'Начать новый диалог',fn:start}]);
+    },700);
+  },1100);
+}
+
+/* ---------- CRM: канбан ---------- */
+var board=$('#board');
+(function(){
+  var h='';STAGES.forEach(function(s,i){h+='<div class="col" data-s="'+i+'"><h3><span><i style="background:'+SCOL[i]+'"></i>'+s+'</span><span class="mono" data-c>0</span></h3><div class="cl"></div><div class="empty">Пока пусто</div></div>'});
+  board.innerHTML=h;
+})();
+function colEl(i){return board.children[i]}
+function addLead(o){
+  var l={id:++D.uid,name:o.name,contact:o.contact,niche:o.niche,sum:o.sum,stage:0};
+  var el=document.createElement('div');el.className='lead';
+  el.innerHTML='<div class="nm"><span class="ini">'+esc(o.name.charAt(0))+'</span>'+esc(o.name)+'</div><div class="ct">'+esc(o.contact)+'</div><div class="tg2"><span class="tag">'+esc(o.niche)+'</span><span class="sum">'+fmt(o.sum)+'</span></div><button class="nx" type="button" aria-label="Следующий этап"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1.5L7.5 6 3 10.5"/></svg></button>';
+  l.el=el;el.querySelector('.nx').addEventListener('click',function(e){e.stopPropagation();if(l.stage<3){H.impact('medium');moveLead(l,l.stage+1)}});
+  D.leads.push(l);colEl(0).querySelector('.cl').appendChild(el);refresh();
+  return l;
+}
+function moveLead(l,s){
+  if(l.stage===s)return;
+  var was=l.stage;l.stage=s;
+  var c=colEl(s);c.classList.add('hot');setTimeout(function(){c.classList.remove('hot')},700);
+  l.el.classList.remove('fly');void l.el.offsetWidth;l.el.classList.add('fly');
+  c.querySelector('.cl').appendChild(l.el);
+  if(s===3){
+    l.el.classList.add('paid');var nx=l.el.querySelector('.nx');if(nx)nx.style.display='none';
+    D.paid++;D.rev+=l.sum;H.notify('success');confetti();toast('Оплата '+fmt(l.sum)+' · '+l.name);
+  }else if(s>was)H.select();
+  refresh();
+}
+function refresh(){
+  [].forEach.call(board.children,function(c,i){
+    var n=D.leads.filter(function(l){return l.stage===i}).length;
+    c.querySelector('[data-c]').textContent=n;c.querySelector('.empty').style.display=n?'none':'';
+  });
+  $('#tabN').textContent=D.leads.length;
+  kpis();revAnim();
+}
+var KP={};
+function kpis(){
+  var n=D.leads.length,conv=n?Math.round(D.paid/n*100):0,avg=D.paid?D.rev/D.paid:0;
+  var items=[['leads','Лиды',String(n),'за сессию'],['paid','Оплат',String(D.paid),conv+'%'],['rev','Выручка',fmt(D.rev),''],['avg','Средний чек',fmt(avg),'']];
+  var box=$('#kpis');
+  if(!box.children.length){box.innerHTML=items.map(function(it){return '<div class="card kpi" data-k="'+it[0]+'"><small>'+it[1]+'</small><b class="mono"></b></div>'}).join('')}
+  items.forEach(function(it){
+    var el=box.querySelector('[data-k="'+it[0]+'"]'),b=el.querySelector('b'),html=esc(it[2])+(it[3]&&it[0]==='paid'?'<em>'+it[3]+'</em>':'');
+    if(KP[it[0]]!==html){b.innerHTML=html;if(KP[it[0]]!==undefined){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}KP[it[0]]=html}
+  });
+}
+
+/* ---------- график выручки ---------- */
+var shown=0,rafR=0;
+function revAnim(){
+  cancelAnimationFrame(rafR);
+  var from=shown,to=D.rev,t0=performance.now();
+  function step(t){
+    var k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);shown=from+(to-from)*e;draw();
+    if(k<1)rafR=requestAnimationFrame(step)
+  }
+  rafR=requestAnimationFrame(step);
+}
+function draw(){
+  var svg=$('#chartSvg'),w=svg.clientWidth||400,h=150,top=14,bot=24,pl=4,pr=14;
+  var base=38000,vals=DAYS.concat([base+shown]);
+  var tot=DAYS.reduce(function(a,b){return a+b},0)+base+shown;
+  $('#revBig').textContent=fmt(tot);
+  $('#revSub').textContent='7 дней · сегодня с бота '+fmt(shown);
+  var max=Math.max.apply(null,vals)*1.18,pw=w-pl-pr,ph=h-top-bot;
+  var pts=vals.map(function(v,i){return[pl+pw*i/(vals.length-1),top+ph*(1-v/max)]});
+  var d='M'+pts[0][0]+' '+pts[0][1];
+  for(var i=0;i<pts.length-1;i++){
+    var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    d+=' C'+(p1[0]+(p2[0]-p0[0])/6)+' '+(p1[1]+(p2[1]-p0[1])/6)+','+(p2[0]-(p3[0]-p1[0])/6)+' '+(p2[1]-(p3[1]-p1[1])/6)+','+p2[0]+' '+p2[1];
+  }
+  var last=pts[pts.length-1],area=d+' L'+last[0]+' '+(top+ph)+' L'+pts[0][0]+' '+(top+ph)+'Z';
+  var lbl='',dn=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],now=new Date();
+  pts.forEach(function(p,i){var dd=new Date(now.getTime()-(vals.length-1-i)*864e5);lbl+='<text x="'+p[0]+'" y="'+(h-6)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10.5" fill="'+(i===pts.length-1?'#2563EB':'#94A3B8')+'" font-weight="'+(i===pts.length-1?600:400)+'">'+(i===pts.length-1?'Сегодня':dn[dd.getDay()])+'</text>'});
+  var grid='';for(var g=0;g<4;g++){var y=top+ph*g/3;grid+='<line x1="'+pl+'" x2="'+(w-pr)+'" y1="'+y+'" y2="'+y+'" stroke="#EEF1F5"/>'}
+  svg.setAttribute('viewBox','0 0 '+w+' '+h);
+  svg.innerHTML='<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563EB" stop-opacity=".22"/><stop offset="1" stop-color="#2563EB" stop-opacity="0"/></linearGradient></defs>'+grid+
+  '<path d="'+area+'" fill="url(#ga)"/><path d="'+d+'" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>'+
+  '<circle cx="'+last[0]+'" cy="'+last[1]+'" r="9" fill="#2563EB" opacity=".14"/><circle cx="'+last[0]+'" cy="'+last[1]+'" r="4.5" fill="#fff" stroke="#2563EB" stroke-width="2.4"/>'+lbl;
+}
+window.addEventListener('resize',draw);
+
+/* ---------- ROI ---------- */
+function roi(){
+  var L=+$('#rL').value,C=+$('#rC').value,K=+$('#rK').value,U=+$('#rU').value;
+  [['rL',L],['rC',C],['rK',K],['rU',U]].forEach(function(p){var el=$('#'+p[0]);el.style.setProperty('--p',((p[1]-el.min)/(el.max-el.min)*100)+'%')});
+  $('#vL').textContent=num(L);$('#vC').textContent=fmt(C);$('#vK').textContent=K+'%';$('#vU').textContent='+'+U+'%';
+  var extra=L*(K*(1+U/100)-K)/100*C,days=extra>0?Math.max(1,Math.round(89000/(extra/30))):0;
+  $('#oP').textContent=fmt(extra);$('#oT').textContent=days?(days>365?'> года':days+' дн.'):'—';
+}
+['rL','rC','rK','rU'].forEach(function(id){$('#'+id).addEventListener('input',function(){roi();H.select()})});
+
+/* ---------- конфетти, тост ---------- */
+var cv=$('#cfx'),cx=cv.getContext('2d'),parts=[],raf=0;
+function sizeC(){cv.width=innerWidth;cv.height=innerHeight}sizeC();window.addEventListener('resize',sizeC);
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  var cols=['#2563EB','#059669','#7C3AED','#F59E0B','#0F172A'];
+  for(var i=0;i<70;i++)parts.push({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.55,vx:(Math.random()-.5)*11,vy:-Math.random()*13-4,s:Math.random()*6+4,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%5],l:1});
+  if(!raf)raf=requestAnimationFrame(cfStep);
+}
+function cfStep(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts=parts.filter(function(p){return p.l>0&&p.y<cv.height+20});
+  parts.forEach(function(p){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=p.vr;p.l-=.008;cx.save();cx.globalAlpha=Math.max(0,p.l);cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore()});
+  raf=parts.length?requestAnimationFrame(cfStep):0;if(!raf)cx.clearRect(0,0,cv.width,cv.height);
+}
+var toastT;
+function toast(t){var e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){e.classList.remove('on')},2300)}
+
+/* ---------- поток лидов ---------- */
+function simLead(){
+  var n=NAMES[Math.floor(Math.random()*NAMES.length)],ni=NICHES[Math.floor(Math.random()*NICHES.length)],b=BUDGETS[Math.floor(Math.random()*BUDGETS.length)];
+  var l=addLead({name:n[0],contact:n[1],niche:ni[0],sum:Math.round(ni[1]*b[1]/500)*500});
+  setTimeout(function(){moveLead(l,1)},1500+Math.random()*1200);
+  setTimeout(function(){moveLead(l,2)},3600+Math.random()*1500);
+  if(Math.random()<.72)setTimeout(function(){moveLead(l,3)},6400+Math.random()*2600);
+}
+$('#flowBtn').addEventListener('click',function(){
+  var b=this;
+  if(D.flow){clearInterval(D.flow);D.flow=null;b.textContent='Поток лидов';H.impact('light');return}
+  H.impact('medium');simLead();D.flow=setInterval(simLead,3800);b.textContent='Остановить поток';
+  if(matchMedia('(max-width:820px)').matches)setView('crm');
+});
+
+/* ---------- вкладки, навигация ---------- */
+function setView(v){
+  $('#main').setAttribute('data-v',v);
+  [].forEach.call(document.querySelectorAll('#tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
+  if(v==='crm')setTimeout(draw,30);
+}
+$('#tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;H.select();setView(b.getAttribute('data-v'))});
+function back(){
+  H.impact('light');
+  if(matchMedia('(max-width:820px)').matches&&$('#main').getAttribute('data-v')==='crm'){setView('chat');return}
+  setTimeout(function(){location.href='https://asano1337.github.io/fortgshophub/'},120);
+}
+$('#backBtn').addEventListener('click',back);
+$('#newBtn').addEventListener('click',function(){H.impact('light');start()});
+[].forEach.call(document.querySelectorAll('.cap a'),function(a){a.addEventListener('click',function(e){vib(10);if(real&&real.initData&&/^https:\/\/t\.me\//.test(a.href)){try{real.openTelegramLink(a.href);e.preventDefault()}catch(x){}}})});
+
+kpis();roi();draw();start();
+})();
+</script>
+</body>
+</html>
